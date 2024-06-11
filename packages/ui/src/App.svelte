@@ -7,10 +7,8 @@
     import ERC721Controls from './ERC721Controls.svelte';
     import ERC1155Controls from './ERC1155Controls.svelte';
     import GovernorControls from './GovernorControls.svelte';
-    import CustomControls from './CustomControls.svelte';
     import CopyIcon from './icons/CopyIcon.svelte';
     import CheckIcon from './icons/CheckIcon.svelte';
-    import RemixIcon from './icons/RemixIcon.svelte';
     import DownloadIcon from './icons/DownloadIcon.svelte';
     import ZipIcon from './icons/ZipIcon.svelte';
     import FileIcon from './icons/FileIcon.svelte';
@@ -18,12 +16,10 @@
     import Dropdown from './Dropdown.svelte';
     import OverflowMenu from './OverflowMenu.svelte';
     import Tooltip from './Tooltip.svelte';
-    import Wiz from './Wiz.svelte';
 
     import type { KindedOptions, Kind, Contract, OptionsErrorMessages } from '@openzeppelin/wizard';
     import { ContractBuilder, buildGeneric, printContract, sanitizeKind, OptionsError } from '@openzeppelin/wizard';
     import { postConfig } from './post-config';
-    import { remixURL } from './remix';
 
     import { saveAs } from 'file-saver';
     import { injectHyperlinks } from './utils/inject-hyperlinks';
@@ -79,19 +75,6 @@
       }, 1000);
     };
 
-    const remixHandler = async (e: MouseEvent) => {
-      e.preventDefault();
-      if ((e.target as Element)?.classList.contains('disabled')) return;
-
-      const { printContractVersioned } = await import('@openzeppelin/wizard/print-versioned');
-
-      const versionedCode = printContractVersioned(contract);
-      window.open(remixURL(versionedCode, !!opts?.upgradeable).toString(), '_blank', 'noopener,noreferrer');
-      if (opts) {
-        await postConfig(opts, 'remix', language);
-      }
-    };
-
     const downloadNpmHandler = async () => {
       const blob = new Blob([code], { type: 'text/plain' });
       if (opts) {
@@ -129,7 +112,6 @@
       erc721: 'ERC721',
       erc1155: 'ERC1155',
       governor: 'Governor',
-      custom: 'Custom',
     }
 
     let functionCall: {
@@ -151,7 +133,6 @@
 </script>
 
 <div class="container flex flex-col gap-4 p-4">
-  <Wiz bind:functionCall={functionCall} bind:currentOpts={opts}></Wiz>
 
   <div class="header flex flex-row justify-between">
     <div class="tab overflow-hidden">
@@ -167,9 +148,6 @@
         </button>
         <button class:selected={tab === 'Governor'} on:click={() => tab = 'Governor'}>
           Governor
-        </button>
-        <button class:selected={tab === 'Custom'} on:click={() => tab = 'Custom'}>
-          Custom
         </button>
       </OverflowMenu>
     </div>
@@ -199,23 +177,6 @@
         hideOnClick={false}
         interactive
       >
-        <button
-          use:trigger
-          class="action-button"
-          class:disabled={opts?.upgradeable === "transparent"}
-          on:click={remixHandler}
-        >
-          <RemixIcon />
-          Open in Remix
-        </button>
-        <div slot="content">
-          Transparent upgradeable contracts are not supported on Remix.
-          Try using Remix with UUPS upgradability or use Hardhat or Truffle with
-          <a href="https://docs.openzeppelin.com/upgrades-plugins/" target="_blank" rel="noopener noreferrer">OpenZeppelin Upgrades</a>.
-          <br />
-          <!-- svelte-ignore a11y-invalid-attribute -->
-          <a href="#" on:click={remixHandler}>Open in Remix anyway</a>.
-        </div>
       </Tooltip>
 
       <Dropdown let:active>
@@ -269,9 +230,6 @@
       </div>
       <div class:hidden={tab !== 'Governor'}>
         <GovernorControls bind:opts={allOpts.Governor} errors={errors.Governor} />
-      </div>
-      <div class:hidden={tab !== 'Custom'}>
-        <CustomControls bind:opts={allOpts.Custom} />
       </div>
     </div>
 
